@@ -1,0 +1,11 @@
+[
+  {
+    "task_id": "replace-with-a-stable-task-id",
+    "repository_url": "https://github.com/OWNER/REPOSITORY.git",
+    "base_commit": "FULL_IMMUTABLE_COMMIT_SHA",
+    "issue": "Paste the issue exactly as it appeared before the fix.",
+    "setup_command": ["python", "-m", "pip", "install", "-e", "."],
+    "test_command": ["python", "-m", "pytest", "-q"]
+  }
+]
+

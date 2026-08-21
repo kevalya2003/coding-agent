@@ -1,0 +1,33 @@
+model:
+  name: "${MODEL_NAME:-gpt-4.1-mini}"
+  api_key_env: "OPENAI_API_KEY"
+  base_url_env: "OPENAI_BASE_URL"
+  temperature: 0.0
+  # Set these to your provider's current prices before reporting cost.
+  input_cost_per_million: 0.0
+  output_cost_per_million: 0.0
+
+budget:
+  max_steps: 20
+  max_input_tokens: 200000
+  max_output_tokens: 20000
+  max_cost_usd: 1.0
+
+agent:
+  max_repeated_action: 3
+  command_timeout_seconds: 120
+  max_tool_output_chars: 20000
+  require_tests_before_submit: true
+
+workspace:
+  # Commands are argument arrays and run without a shell. A requested command must
+  # begin with one of these token sequences.
+  allowed_command_prefixes:
+    - ["python", "-m", "pytest"]
+    - ["pytest"]
+    - ["python", "-m", "unittest"]
+    - ["npm", "test"]
+    - ["npm", "run", "test"]
+    - ["cargo", "test"]
+    - ["go", "test"]
+
