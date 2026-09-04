@@ -98,6 +98,22 @@ Keep the task file fixed across experiments. Change one feature at a time to pro
 honest ablation study. The local report calls this a **submission rate**: passing the
 configured command is not proof that hidden benchmark tests pass.
 
+### Offline seeded suite
+
+Real repositories usually pass their own tests at any given commit, so they cannot be
+used as tasks without separate fail-to-pass tests. For cheap iteration there is a
+generated suite of eight small repositories, each holding one deliberate defect and a
+test that catches it:
+
+```powershell
+python benchmarks/build_local_tasks.py
+coding-agent evaluate --tasks benchmarks/tasks.local.json --output runs/seeded-v1
+```
+
+The generator refuses to emit a task whose suite already passes, so the set cannot
+silently become meaningless. These are seeded defects, not real-world issues. Report
+them as a seeded-bug suite and never as SWE-bench.
+
 ## SWE-bench
 
 This repository produces standard unified diffs, so its patches can be evaluated with

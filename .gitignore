@@ -12,3 +12,7 @@ build/
 runs/*
 !runs/.gitkeep
 
+
+# Generated seeded-bug repositories and their machine-specific task file.
+benchmarks/local/
+benchmarks/tasks.local.json
