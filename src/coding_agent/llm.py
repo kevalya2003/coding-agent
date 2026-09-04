@@ -4,14 +4,17 @@ import json
 import os
 from typing import Any, Dict, List, Protocol, Sequence
 
-from openai import OpenAI
+from openai import BadRequestError, OpenAI
 
 from coding_agent.config import ModelConfig
 from coding_agent.models import ModelResponse, ToolCall
 
 
 class ModelProtocolError(RuntimeError):
-    """The provider returned a response the control loop cannot execute."""
+    """The model produced something the control loop cannot execute.
+
+    Recoverable: the loop can describe the problem and let the model try again.
+    """
 
 
 class LLMClient(Protocol):
@@ -37,13 +40,18 @@ class OpenAIChatClient:
     def complete(
         self, messages: List[Dict[str, Any]], tools: Sequence[Dict[str, Any]]
     ) -> ModelResponse:
-        completion = self.client.chat.completions.create(
-            model=self.config.name,
-            messages=messages,
-            tools=list(tools),
-            tool_choice="auto",
-            temperature=self.config.temperature,
-        )
+        try:
+            completion = self.client.chat.completions.create(
+                model=self.config.name,
+                messages=messages,
+                tools=list(tools),
+                tool_choice="auto",
+                temperature=self.config.temperature,
+            )
+        except BadRequestError as error:
+            # Providers that validate tool calls server-side reject a malformed
+            # call with 400 rather than returning it for the loop to handle.
+            raise ModelProtocolError(str(error)) from error
         if not completion.choices:
             raise ModelProtocolError("Model returned no choices")
         message = completion.choices[0].message

@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Sequence
 
 from coding_agent.budget import BudgetExceeded, BudgetState
 from coding_agent.config import AppConfig
-from coding_agent.llm import LLMClient
+from coding_agent.llm import LLMClient, ModelProtocolError
 from coding_agent.models import AgentResult, ModelResponse, ToolCall
 from coding_agent.tools import ToolRegistry
 from coding_agent.trajectory import TrajectoryWriter
@@ -56,6 +56,7 @@ class CodingAgent:
         )
         self.last_signature: Optional[str] = None
         self.repeated_action_count = 0
+        self.protocol_errors = 0
 
     def run(self, issue: str) -> AgentResult:
         issue = issue.strip()
@@ -79,9 +80,30 @@ class CodingAgent:
 
             try:
                 response = self.llm.complete(messages, self.tools.schemas)
+            except ModelProtocolError as error:
+                self.protocol_errors += 1
+                self.trajectory.write(
+                    "protocol_error",
+                    error=str(error),
+                    consecutive=self.protocol_errors,
+                )
+                if self.protocol_errors >= self.config.agent.max_protocol_errors:
+                    return self._finish(False, "protocol_error", str(error))
+                messages.append(
+                    {
+                        "role": "user",
+                        "content": (
+                            "Your last tool call was rejected before it reached the "
+                            "repository:\n{}\n\nCall the tool again using exactly the "
+                            "parameter names given in its schema.".format(error)
+                        ),
+                    }
+                )
+                continue
             except Exception as error:
                 return self._finish(False, "model_error", str(error))
 
+            self.protocol_errors = 0
             self._record_model_response(response)
             try:
                 self.budget.record_usage(response.input_tokens, response.output_tokens)

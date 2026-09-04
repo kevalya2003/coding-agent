@@ -34,6 +34,7 @@ class BudgetConfig:
 @dataclass(frozen=True)
 class AgentConfig:
     max_repeated_action: int = 3
+    max_protocol_errors: int = 3
     command_timeout_seconds: int = 120
     max_tool_output_chars: int = 20_000
     require_tests_before_submit: bool = True
@@ -141,5 +142,7 @@ def load_config(path: Optional[Path] = None) -> AppConfig:
         raise ConfigError("budget.max_steps must be at least 1")
     if config.agent.max_repeated_action < 2:
         raise ConfigError("agent.max_repeated_action must be at least 2")
+    if config.agent.max_protocol_errors < 1:
+        raise ConfigError("agent.max_protocol_errors must be at least 1")
     return config
 

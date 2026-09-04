@@ -12,6 +12,7 @@ This project is intentionally more than an LLM wrapper. It includes:
 - mandatory test verification before submission;
 - step and token budgets, plus an optional provider-priced dollar budget;
 - repeated-action loop detection;
+- bounded recovery from malformed tool calls the provider rejects outright;
 - JSONL trajectories for replay and failure analysis; and
 - a benchmark runner for fixed, reproducible task sets.
 

@@ -15,6 +15,9 @@ budget:
 
 agent:
   max_repeated_action: 3
+  # Some providers validate tool calls server-side and reject a malformed one with
+  # HTTP 400. The rejection is returned to the model; this caps consecutive retries.
+  max_protocol_errors: 3
   command_timeout_seconds: 120
   max_tool_output_chars: 20000
   require_tests_before_submit: true
