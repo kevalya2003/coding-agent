@@ -1,0 +1,13 @@
+{
+  "average_cost_usd": 0.0,
+  "input_tokens": 148197,
+  "output_tokens": 11380,
+  "status_counts": {
+    "budget_exhausted": 2,
+    "submitted": 6
+  },
+  "submission_rate": 0.75,
+  "submitted": 6,
+  "tasks": 8,
+  "total_cost_usd": 0.0
+}
