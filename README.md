@@ -1,5 +1,7 @@
 # Coding Agent
 
+[![CI](https://github.com/kevalya2003/coding-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/kevalya2003/coding-agent/actions/workflows/ci.yml)
+
 A model-agnostic agent that investigates a software issue, edits a local repository,
 runs its tests, and submits a patch only after verification.
 
@@ -30,7 +32,9 @@ issue + repository
 
 The model never receives an unrestricted terminal. Its only process tool runs the fixed
 verification command chosen by the repository owner. Arguments are validated against
-configured prefixes and executed with `shell=False`.
+configured prefixes and executed with `shell=False`. A command that does not match the
+allow list is rejected before the first model call, so a mistyped `--test-command` costs
+nothing.
 
 ## Quick start
 
@@ -112,13 +116,24 @@ sandbox: repository test code still runs on the host. Use Docker or a disposable
 untrusted code. When using `run` directly, point it at a repository where uncommitted
 edits are acceptable.
 
-## Resume-ready evidence
+## Reporting results
 
-Do not put placeholder numbers on your resume. After real experiments, publish:
+Report measurements, never placeholders. A complete report contains:
 
-1. baseline and improved resolve rates on the same pinned task set;
-2. an ablation for each control-loop improvement;
-3. a failure taxonomy based on reviewed trajectories;
-4. task success versus inference cost; and
+1. baseline and improved submission rates on the same pinned task set;
+2. an ablation for each control-loop change;
+3. a failure taxonomy derived from reviewed trajectories;
+4. task success against inference cost; and
 5. two readable trajectories: one success and one instructive failure.
+
+## Development
+
+```powershell
+python -m pip install -e ".[dev]"
+python -m pytest -q
+```
+
+The suite covers the workspace boundary, patch generation against a real `git apply`,
+the budget accounting, configuration loading, and the control loop driven by a scripted
+model, so none of it needs an API key or network access.
 
