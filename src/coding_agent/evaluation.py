@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional, Sequence
 from coding_agent.agent import CodingAgent
 from coding_agent.config import AppConfig
 from coding_agent.llm import LLMClient
+from coding_agent.workspace import command_is_allowed, describe_prefixes
 
 
 @dataclass(frozen=True)
@@ -78,6 +79,7 @@ class Evaluator:
         (self.output_directory / "trajectories").mkdir(exist_ok=True)
 
     def run(self, tasks: Sequence[EvaluationTask]) -> Dict[str, Any]:
+        self._reject_unusable_tasks(tasks)
         predictions_path = self.output_directory / "predictions.jsonl"
         results: List[Dict[str, Any]] = []
         with predictions_path.open("w", encoding="utf-8") as predictions:
@@ -107,6 +109,22 @@ class Evaluator:
             json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8"
         )
         return summary
+
+    def _reject_unusable_tasks(self, tasks: Sequence[EvaluationTask]) -> None:
+        """Fail the whole run up front rather than after paying for earlier tasks."""
+
+        prefixes = self.config.workspace.allowed_command_prefixes
+        offenders = [
+            task.task_id
+            for task in tasks
+            if not command_is_allowed(task.test_command, prefixes)
+        ]
+        if offenders:
+            raise ValueError(
+                "test_command is not allow-listed for: {}. Allowed prefixes: {}".format(
+                    ", ".join(offenders), describe_prefixes(prefixes)
+                )
+            )
 
     def _run_task(self, task: EvaluationTask) -> Dict[str, Any]:
         with tempfile.TemporaryDirectory(prefix="coding-agent-") as temp:

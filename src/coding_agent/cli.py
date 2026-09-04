@@ -3,6 +3,7 @@
 import argparse
 import json
 import shlex
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional, Sequence
@@ -10,9 +11,10 @@ from typing import List, Optional, Sequence
 from dotenv import load_dotenv
 
 from coding_agent.agent import CodingAgent
-from coding_agent.config import load_config
+from coding_agent.config import ConfigError, load_config
 from coding_agent.evaluation import Evaluator, load_tasks
 from coding_agent.llm import OpenAIChatClient
+from coding_agent.workspace import WorkspaceError
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -61,6 +63,14 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
+    try:
+        return _run(argv)
+    except (ConfigError, WorkspaceError, ValueError) as error:
+        print("error: {}".format(error), file=sys.stderr)
+        return 2
+
+
+def _run(argv: Optional[Sequence[str]]) -> int:
     load_dotenv()
     arguments = _parser().parse_args(argv)
     config = load_config(arguments.config)

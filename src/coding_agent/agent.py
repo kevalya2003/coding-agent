@@ -47,6 +47,7 @@ class CodingAgent:
             timeout_seconds=config.agent.command_timeout_seconds,
             max_output_chars=config.agent.max_tool_output_chars,
         )
+        workspace.ensure_command_allowed(test_command)
         self.tools = ToolRegistry(
             workspace,
             test_command=test_command,
